@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Web Manager</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: white;
+        }
+
+        button {
+            border: 0;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        /* =========================
+           HOME
+        ========================= */
+
+        #home {
+            min-height: 100vh;
+            padding: 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border-radius: 8px;
+            background: #333;
+            color: white;
+        }
+
+        .btn:hover {
+            background: #444;
+        }
+
+        .btn.primary {
+            background: #fff;
+            color: #111;
+        }
+
+        .btn.danger {
+            background: #d32f2f;
+            color: white;
+        }
+
+        .web-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .web-card {
+            position: relative;
+            padding: 25px;
+            min-height: 120px;
+            background: #1d1d1d;
+            border: 1px solid #333;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: .15s;
+        }
+
+        .web-card:hover {
+            transform: translateY(-2px);
+            border-color: #666;
+        }
+
+        .web-card h3 {
+            margin-bottom: 10px;
+        }
+
+        .web-card p {
+            color: #888;
+            font-size: 13px;
+            word-break: break-all;
+        }
+
+        .delete-checkbox {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .empty {
+            color: #777;
+            text-align: center;
+            margin-top: 100px;
+        }
+
+        /* =========================
+           MODAL
+        ========================= */
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, .75);
+            z-index: 100;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            width: min(450px, 90%);
+            padding: 30px;
+            background: #1d1d1d;
+            border-radius: 12px;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 7px;
+            color: #aaa;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #444;
+            border-radius: 7px;
+            outline: none;
+            background: #111;
+            color: white;
+        }
+
+        .form-group input:focus {
+            border-color: #888;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        /* =========================
+           IFRAME
+        ========================= */
+
+        #viewer {
+            position: fixed;
+            inset: 0;
+            display: none;
+            background: #000;
+            z-index: 200;
+        }
+
+        #viewer.active {
+            display: block;
+        }
+
+        #webFrame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        #backButton {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 201;
+
+            padding: 10px 16px;
+            border-radius: 8px;
+
+            background: rgba(0, 0, 0, .7);
+            color: white;
+
+            opacity: .3;
+            transition: .2s;
+        }
+
+        #backButton:hover {
+            opacity: 1;
+        }
+
+        #chapterNav {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 201;
+
+            display: flex;
+            gap: 8px;
+        }
+
+        #chapterNav button {
+            padding: 10px 16px;
+            border-radius: 8px;
+
+            background: rgba(0, 0, 0, .7);
+            color: white;
+
+            opacity: .3;
+            transition: .2s;
+        }
+
+        #chapterNav button:hover {
+            opacity: 1;
+        }
+
+        /* =========================
+           DELETE MODE
+        ========================= */
+
+        #deleteActions {
+            display: none;
+        }
+
+        #deleteActions.active {
+            display: flex;
+        }
+
+        @media (max-width: 600px) {
+            #home {
+                padding: 20px;
+            }
+
+            .header {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- =========================
+     HOME
+========================= -->
+
+<div id="home">
+
+    <div class="header">
+
+        <span></span>
+
+        <div class="actions" id="normalActions">
+            <button class="btn primary" id="addButton">
+                Añadir
+            </button>
+
+            <button class="btn danger" id="deleteButton">
+                Borrar
+            </button>
+        </div>
+
+        <div class="actions" id="deleteActions">
+
+            <button class="btn" id="cancelDeleteButton">
+                Cancelar
+            </button>
+
+            <button class="btn danger" id="confirmDeleteButton">
+                Confirmar
+            </button>
+
+        </div>
+
+    </div>
+
+    <div id="webList" class="web-list"></div>
+
+</div>
+
+
+<!-- =========================
+     ADD MODAL
+========================= -->
+
+<div id="addModal" class="modal">
+
+    <div class="modal-content">
+
+        <h2>Añadir web</h2>
+
+        <form id="addForm">
+
+            <div class="form-group">
+
+                <label for="title">
+                    Título
+                </label>
+
+                <input
+                    id="title"
+                    type="text"
+                    placeholder="Mi aplicación"
+                    required
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="url">
+                    URL
+                </label>
+
+                <input
+                    id="url"
+                    type="url"
+                    placeholder="https://ejemplo.com"
+                    required
+                >
+
+            </div>
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="btn"
+                    id="cancelAddButton"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn primary"
+                >
+                    Añadir
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     VIEWER
+========================= -->
+
+<div id="viewer">
+
+    <button id="backButton">
+        ← Volver
+    </button>
+
+    <div id="chapterNav">
+        <button id="prevChapterButton">
+            ‹ Anterior
+        </button>
+        <button id="nextChapterButton">
+            Siguiente ›
+        </button>
+    </div>
+
+    <iframe
+        id="webFrame"
+        allow="fullscreen"
+    ></iframe>
+
+</div>
+
+
+<script>
+
+    const STORAGE_KEY = "embeddedWebs";
+
+    let webs = loadWebs();
+    let deleteMode = false;
+    let currentWebId = null;
+
+
+    /* =========================
+       STORAGE
+    ========================= */
+
+    function loadWebs() {
+        try {
+            return JSON.parse(
+                localStorage.getItem(STORAGE_KEY)
+            ) || [];
+        } catch {
+            return [];
+        }
+    }
+
+
+    function saveWebs() {
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(webs)
+        );
+    }
+
+
+    /* =========================
+       DOM
+    ========================= */
+
+    const webList = document.getElementById("webList");
+
+    const addModal = document.getElementById("addModal");
+
+    const addForm = document.getElementById("addForm");
+
+    const viewer = document.getElementById("viewer");
+
+    const webFrame = document.getElementById("webFrame");
+
+    const normalActions =
+        document.getElementById("normalActions");
+
+    const deleteActions =
+        document.getElementById("deleteActions");
+
+
+    /* =========================
+       RENDER
+    ========================= */
+
+    function render() {
+
+        webList.innerHTML = "";
+
+        if (webs.length === 0) {
+
+            webList.innerHTML = `
+                <div class="empty">
+                    No hay webs añadidas.
+                </div>
+            `;
+
+            return;
+        }
+
+        webs.forEach(web => {
+
+            const card = document.createElement("div");
+
+            card.className = "web-card";
+
+            card.dataset.id = web.id;
+
+            card.innerHTML = `
+                <h3>${escapeHtml(web.title)}</h3>
+                <p>${escapeHtml(web.url)}</p>
+            `;
+
+            if (deleteMode) {
+
+                const checkbox =
+                    document.createElement("input");
+
+                checkbox.type = "checkbox";
+
+                checkbox.className =
+                    "delete-checkbox";
+
+                checkbox.dataset.id = web.id;
+
+                checkbox.addEventListener(
+                    "click",
+                    event => event.stopPropagation()
+                );
+
+                card.appendChild(checkbox);
+
+            } else {
+
+                card.addEventListener(
+                    "click",
+                    () => openWeb(web.id)
+                );
+
+            }
+
+            webList.appendChild(card);
+        });
+    }
+
+
+    /* =========================
+       ADD
+    ========================= */
+
+    document
+        .getElementById("addButton")
+        .addEventListener("click", () => {
+
+            addModal.classList.add("active");
+
+            document.getElementById("title").focus();
+
+        });
+
+
+    document
+        .getElementById("cancelAddButton")
+        .addEventListener("click", closeAddModal);
+
+
+    function closeAddModal() {
+
+        addModal.classList.remove("active");
+
+        addForm.reset();
+
+    }
+
+
+    addForm.addEventListener("submit", event => {
+
+        event.preventDefault();
+
+        const title =
+            document.getElementById("title")
+                .value
+                .trim();
+
+        let url =
+            document.getElementById("url")
+                .value
+                .trim();
+
+        if (!/^https?:\/\//i.test(url)) {
+            url = "https://" + url;
+        }
+
+        try {
+            new URL(url);
+        } catch {
+            alert("La URL no es válida.");
+            return;
+        }
+
+        webs.push({
+            id: crypto.randomUUID(),
+            title,
+            url
+        });
+
+        saveWebs();
+
+        closeAddModal();
+
+        render();
+
+    });
+
+
+    /* =========================
+       DELETE MODE
+    ========================= */
+
+    document
+        .getElementById("deleteButton")
+        .addEventListener("click", () => {
+
+            if (webs.length === 0) {
+                return;
+            }
+
+            deleteMode = true;
+
+            normalActions.style.display = "none";
+
+            deleteActions.classList.add("active");
+
+            render();
+
+        });
+
+
+    document
+        .getElementById("cancelDeleteButton")
+        .addEventListener("click", () => {
+
+            deleteMode = false;
+
+            normalActions.style.display = "flex";
+
+            deleteActions.classList.remove("active");
+
+            render();
+
+        });
+
+
+    document
+        .getElementById("confirmDeleteButton")
+        .addEventListener("click", () => {
+
+            const selected = [
+                ...document.querySelectorAll(
+                    ".delete-checkbox:checked"
+                )
+            ].map(
+                checkbox => checkbox.dataset.id
+            );
+
+            if (selected.length === 0) {
+                alert("Selecciona al menos una web.");
+                return;
+            }
+
+            webs = webs.filter(
+                web => !selected.includes(web.id)
+            );
+
+            saveWebs();
+
+            deleteMode = false;
+
+            normalActions.style.display = "flex";
+
+            deleteActions.classList.remove("active");
+
+            render();
+
+        });
+
+
+    /* =========================
+       OPEN WEB
+    ========================= */
+
+    function openWeb(id) {
+
+        const web = webs.find(
+            item => item.id === id
+        );
+
+        if (!web) return;
+
+        currentWebId = id;
+
+        webFrame.src = web.url;
+
+        viewer.classList.add("active");
+
+    }
+
+
+    /* =========================
+       CHAPTER NAV
+    ========================= */
+
+    /*
+     * Busca el último número que aparece en la URL (normalmente
+     * el capítulo) y le suma/resta `delta`. Mantiene los ceros a
+     * la izquierda si los había (p.ej. "007" -> "008").
+     */
+    function shiftChapterUrl(url, delta) {
+
+        const match = url.match(/(\d+)(?!.*\d)/);
+
+        if (!match) return null;
+
+        const numStr = match[1];
+
+        const newNum = parseInt(numStr, 10) + delta;
+
+        if (newNum < 0) return null;
+
+        let newNumStr = String(newNum);
+
+        if (numStr.length > 1 && numStr.startsWith("0")) {
+            newNumStr = newNumStr.padStart(numStr.length, "0");
+        }
+
+        return (
+            url.slice(0, match.index) +
+            newNumStr +
+            url.slice(match.index + numStr.length)
+        );
+
+    }
+
+
+    function goToChapter(delta) {
+
+        if (!currentWebId) return;
+
+        const web =
+            webs.find(
+                item => item.id === currentWebId
+            );
+
+        if (!web) return;
+
+        const newUrl = shiftChapterUrl(web.url, delta);
+
+        if (!newUrl) {
+            alert("No se ha encontrado ningún número en la URL.");
+            return;
+        }
+
+        web.url = newUrl;
+
+        saveWebs();
+
+        webFrame.src = newUrl;
+
+        render();
+
+    }
+
+
+    document
+        .getElementById("prevChapterButton")
+        .addEventListener("click", () => goToChapter(-1));
+
+
+    document
+        .getElementById("nextChapterButton")
+        .addEventListener("click", () => goToChapter(1));
+
+
+    /* =========================
+       CLOSE WEB
+    ========================= */
+
+    document
+        .getElementById("backButton")
+        .addEventListener("click", closeViewer);
+
+
+    function closeViewer() {
+
+        updateCurrentUrl();
+
+        viewer.classList.remove("active");
+
+        webFrame.src = "";
+
+        currentWebId = null;
+
+    }
+
+
+    /* =========================
+       URL SYNC
+    ========================= */
+
+    /*
+     * IMPORTANTE — Same-Origin Policy:
+     *
+     * Solo podemos leer `webFrame.contentWindow.location.href`
+     * cuando el iframe carga contenido del MISMO origen que esta
+     * página. En cuanto navega a un dominio externo (el caso
+     * habitual aquí), el navegador bloquea el acceso y lanza un
+     * SecurityError — por eso el bloque catch de abajo existe.
+     *
+     * Esto es una restricción de seguridad del navegador, no un
+     * bug: ninguna web puede leer la URL interna de un iframe
+     * ajeno (si pudiera, cualquier página podría espiar tu
+     * navegación dentro de un iframe con tu banco, por ejemplo).
+     * No hay forma de saltársela desde JS del lado del padre.
+     *
+     * Además, muchos sitios grandes (Google, X, YouTube...)
+     * bloquean directamente que se les embeba en un iframe
+     * mediante cabeceras X-Frame-Options / CSP, y ahí ni siquiera
+     * llegará a cargar contenido.
+     *
+     * Lo que SÍ funciona:
+     *  - Webs que sirvas tú mismo desde el mismo origen que esta
+     *    página: la lectura de location.href funcionará sin
+     *    problema.
+     *  - Webs de terceros que tú controles y a las que puedas
+     *    añadir un pequeño script para que avisen activamente de
+     *    su URL vía postMessage (ver listener más abajo). Eso sí
+     *    esquiva la restricción, porque la propia web colabora.
+     */
+
+    function updateCurrentUrl() {
+
+        if (!currentWebId) return;
+
+        const web =
+            webs.find(
+                item => item.id === currentWebId
+            );
+
+        if (!web) return;
+
+        try {
+
+            const currentUrl =
+                webFrame.contentWindow.location.href;
+
+            if (
+                currentUrl &&
+                currentUrl !== "about:blank" &&
+                currentUrl !== web.url
+            ) {
+
+                web.url = currentUrl;
+
+                saveWebs();
+
+                render();
+
+            }
+
+        } catch (error) {
+
+            /*
+             * Iframe cross-origin: no podemos leer su URL.
+             * No hacemos nada — es el comportamiento esperado
+             * para la inmensa mayoría de webs embebidas.
+             */
+
+        }
+
+    }
+
+    /*
+     * En vez de sondear cada 500ms, escuchamos el evento "load"
+     * del propio iframe: se dispara en cada navegación completa
+     * (incluidas las de sitios cross-origin), así que es el punto
+     * correcto para intentar leer la URL — sin gastar ciclos de
+     * CPU sondeando constantemente.
+     *
+     * Ojo: en sitios que son SPA (navegación por History API sin
+     * recarga completa) este evento no se disparará en cada
+     * "página" interna, aunque sí en la carga inicial.
+     */
+    webFrame.addEventListener("load", updateCurrentUrl);
+
+    /*
+     * Vía de escape para webs que SÍ controlas: si añades este
+     * pequeño script en la página embebida, evita por completo la
+     * restricción de origen cruzado avisando activamente de su URL:
+     *
+     *   window.parent.postMessage(
+     *       { type: "web-manager:url", url: location.href },
+     *       "*"
+     *   );
+     *
+     * Llamando a eso en el load de la página y cada vez que cambie
+     * la URL (p.ej. en un listener de "popstate" o tras un
+     * pushState), este listener la recogerá automáticamente.
+     */
+    window.addEventListener("message", event => {
+
+        if (
+            !event.data ||
+            event.data.type !== "web-manager:url" ||
+            !currentWebId
+        ) {
+            return;
+        }
+
+        const web =
+            webs.find(
+                item => item.id === currentWebId
+            );
+
+        if (!web) return;
+
+        if (event.data.url && event.data.url !== web.url) {
+
+            web.url = event.data.url;
+
+            saveWebs();
+
+            render();
+
+        }
+
+    });
+
+
+    /* =========================
+       SECURITY
+    ========================= */
+
+    function escapeHtml(value) {
+
+        const div =
+            document.createElement("div");
+
+        div.textContent = value;
+
+        return div.innerHTML;
+
+    }
+
+
+    /* =========================
+       INIT
+    ========================= */
+
+    render();
+
+</script>
+
+</body>
+</html>
