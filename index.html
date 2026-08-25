@@ -57,6 +57,10 @@
             color: white;
         }
 
+        .json-btn {
+            min-width: 80px;
+        }
+
         .btn:hover {
             background: #444;
         }
@@ -187,7 +191,8 @@
             color: #aaa;
         }
 
-        .form-group input {
+        .form-group input,
+        .form-group textarea {
             width: 100%;
             padding: 12px;
             border: 1px solid #444;
@@ -195,9 +200,17 @@
             outline: none;
             background: #111;
             color: white;
+            font-family: inherit;
         }
 
-        .form-group input:focus {
+        .form-group textarea {
+            font-family: monospace;
+            font-size: 13px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
             border-color: #888;
         }
 
@@ -333,12 +346,20 @@
         <span></span>
 
         <div class="actions" id="normalActions">
-            <button class="btn primary" id="addButton">
-                Añadir
+            <button class="btn json-btn" id="copyJsonButton" title="Copiar todo el JSON al portapapeles">
+                Copy
             </button>
 
-            <button class="btn danger" id="deleteButton">
-                Borrar
+            <button class="btn json-btn" id="importJsonButton" title="Importar array de webs en JSON">
+                Import
+            </button>
+
+            <button class="btn  json-btn primary" id="addButton">
+                Add
+            </button>
+
+            <button class="btn  json-btn danger" id="deleteButton">
+                Delete
             </button>
         </div>
 
@@ -455,6 +476,59 @@
 
 
 <!-- =========================
+     IMPORT MODAL
+========================= -->
+
+<div id="importModal" class="modal">
+
+    <div class="modal-content">
+
+        <h2>Importar JSON</h2>
+
+        <div class="form-group">
+
+            <label for="importJsonInput">
+                Pega aquí el array JSON de webs
+            </label>
+
+            <textarea
+                id="importJsonInput"
+                rows="8"
+                placeholder='[&#10;  {&#10;    "title": "Mi web",&#10;    "url": "https://ejemplo.com",&#10;    "image": ""&#10;  }&#10;]'
+            ></textarea>
+
+        </div>
+
+        <div class="modal-actions" style="justify-content: space-between;">
+
+            <button
+                type="button"
+                class="btn"
+                id="cancelImportButton"
+            >
+                Cancelar
+            </button>
+
+            <div style="display: flex; gap: 10px;">
+                <button
+                    type="button"
+                    class="btn"
+                    id="importAppendButton"
+                    title="Añadir a las webs existentes"
+                >
+                    Añadir
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
      VIEWER
 ========================= -->
 
@@ -533,6 +607,27 @@
 
     const deleteActions =
         document.getElementById("deleteActions");
+
+    const importModal =
+        document.getElementById("importModal");
+
+    const importJsonInput =
+        document.getElementById("importJsonInput");
+
+    const copyJsonButton =
+        document.getElementById("copyJsonButton");
+
+    const importJsonButton =
+        document.getElementById("importJsonButton");
+
+    const cancelImportButton =
+        document.getElementById("cancelImportButton");
+
+    const importAppendButton =
+        document.getElementById("importAppendButton");
+
+    const importReplaceButton =
+        document.getElementById("importReplaceButton");
 
 
     /* =========================
@@ -872,6 +967,182 @@
 
         render();
 
+    });
+
+
+    /* =========================
+       IMPORT / EXPORT JSON
+    ========================= */
+
+    async function copyStorageJson() {
+
+        const json = JSON.stringify(webs, null, 2);
+
+        try {
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(json);
+            } else {
+                const textarea = document.createElement("textarea");
+                textarea.value = json;
+                textarea.style.position = "fixed";
+                textarea.style.opacity = "0";
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand("copy");
+                document.body.removeChild(textarea);
+            }
+
+            if (copyJsonButton) {
+                const originalText = copyJsonButton.textContent;
+                copyJsonButton.textContent = "¡Copied!";
+                setTimeout(() => {
+                    copyJsonButton.textContent = originalText;
+                }, 2000);
+            }
+
+            return json;
+
+        } catch (err) {
+
+            console.error("Error al copiar al portapapeles:", err);
+            alert("No se pudo copiar automáticamente al portapapeles.");
+            return json;
+
+        }
+
+    }
+
+
+    function importStorageJson(rawInput, replaceAll = false) {
+
+        try {
+
+            let data = rawInput;
+
+            if (typeof rawInput === "string") {
+
+                const trimmed = rawInput.trim();
+
+                if (!trimmed) {
+                    alert("Por favor, pega un JSON válido.");
+                    return false;
+                }
+
+                data = JSON.parse(trimmed);
+
+            }
+
+            if (!Array.isArray(data)) {
+
+                if (data && typeof data === "object") {
+                    data = [data];
+                } else {
+                    throw new Error("El JSON debe ser un array de objetos.");
+                }
+
+            }
+
+            const parsedWebs = [];
+
+            for (const item of data) {
+
+                if (!item || typeof item !== "object") continue;
+
+                let title = String(item.title || "").trim();
+                let url = String(item.url || "").trim();
+                let image = typeof item.image === "string" ? item.image : "";
+
+                if (!url && !title) continue;
+
+                if (url && !/^https?:\/\//i.test(url)) {
+                    url = "https://" + url;
+                }
+
+                if (!title) {
+                    try {
+                        title = new URL(url).hostname;
+                    } catch {
+                        title = url || "Sin título";
+                    }
+                }
+
+                parsedWebs.push({
+                    id: item.id && typeof item.id === "string" ? item.id : crypto.randomUUID(),
+                    title,
+                    url,
+                    image
+                });
+
+            }
+
+            if (parsedWebs.length === 0) {
+                alert("No se encontraron webs válidas en el JSON proporcionado.");
+                return false;
+            }
+
+            if (replaceAll) {
+
+                webs = parsedWebs;
+
+            } else {
+
+                const existingIds = new Set(webs.map(w => w.id));
+
+                for (const item of parsedWebs) {
+                    if (existingIds.has(item.id)) {
+                        item.id = crypto.randomUUID();
+                    }
+                    webs.push(item);
+                }
+
+            }
+
+            saveWebs();
+
+            render();
+
+            return true;
+
+        } catch (err) {
+
+            console.error("Error al importar JSON:", err);
+            alert("Error al procesar el JSON: " + err.message);
+            return false;
+
+        }
+
+    }
+
+
+    window.copyStorageJson = copyStorageJson;
+    window.importStorageJson = importStorageJson;
+
+
+    copyJsonButton.addEventListener("click", () => {
+        copyStorageJson();
+    });
+
+
+    importJsonButton.addEventListener("click", () => {
+        importJsonInput.value = "";
+        importModal.classList.add("active");
+        importJsonInput.focus();
+    });
+
+
+    cancelImportButton.addEventListener("click", () => {
+        importModal.classList.remove("active");
+        importJsonInput.value = "";
+    });
+
+
+    importAppendButton.addEventListener("click", () => {
+        const success = importStorageJson(importJsonInput.value, false);
+        if (success) {
+            importModal.classList.remove("active");
+            importJsonInput.value = "";
+        }
     });
 
 
