@@ -142,8 +142,10 @@
 
         .empty {
             color: #777;
-            text-align: center;
-            margin-top: 100px;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
         }
 
         /* =========================
@@ -527,6 +529,7 @@
 
     const normalActions =
         document.getElementById("normalActions");
+        normalActions.style.justifyContent = "end";
 
     const deleteActions =
         document.getElementById("deleteActions");
