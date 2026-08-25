@@ -103,6 +103,14 @@
             word-break: break-all;
         }
 
+        .card-thumb {
+            width: calc(100% + 50px);
+            height: 110px;
+            margin: -25px -25px 15px -25px;
+            background: #111 center / cover no-repeat;
+            border-radius: 12px 12px 0 0;
+        }
+
         .delete-checkbox {
             position: absolute;
             top: 15px;
@@ -110,6 +118,26 @@
             width: 20px;
             height: 20px;
             cursor: pointer;
+        }
+
+        .edit-card-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, .55);
+            color: white;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: .15s;
+        }
+
+        .edit-card-btn:hover {
+            background-color: #6f9bf4;
         }
 
         .empty {
@@ -171,6 +199,25 @@
             border-color: #888;
         }
 
+        .image-preview {
+            display: none;
+            max-width: 100%;
+            max-height: 160px;
+            margin-top: 10px;
+            border-radius: 7px;
+            object-fit: cover;
+        }
+
+        .remove-image-btn {
+            display: none;
+            margin-top: 8px;
+            background: none;
+            color: #d32f2f;
+            font-size: 13px;
+            text-decoration: underline;
+            padding: 0;
+        }
+
         .modal-actions {
             display: flex;
             justify-content: flex-end;
@@ -223,7 +270,7 @@
         #chapterNav {
             position: fixed;
             top: 15px;
-            right: 15px;
+            right: 25px;
             z-index: 201;
 
             display: flex;
@@ -320,7 +367,7 @@
 
     <div class="modal-content">
 
-        <h2>Añadir web</h2>
+        <h2 id="modalTitle">Añadir web</h2>
 
         <form id="addForm">
 
@@ -354,6 +401,30 @@
 
             </div>
 
+            <div class="form-group">
+
+                <label for="image">
+                    Imagen (opcional)
+                </label>
+
+                <input
+                    id="image"
+                    type="text"
+                    placeholder="Pega una URL de imagen, o pega (Ctrl+V) una imagen copiada"
+                >
+
+                <img class="image-preview" id="imagePreview" alt="">
+
+                <button
+                    type="button"
+                    class="remove-image-btn"
+                    id="removeImageButton"
+                >
+                    Quitar imagen
+                </button>
+
+            </div>
+
             <div class="modal-actions">
 
                 <button
@@ -367,6 +438,7 @@
                 <button
                     type="submit"
                     class="btn primary"
+                    id="submitButton"
                 >
                     Añadir
                 </button>
@@ -387,15 +459,15 @@
 <div id="viewer">
 
     <button id="backButton">
-        ← Volver
+        ←
     </button>
 
     <div id="chapterNav">
         <button id="prevChapterButton">
-            ‹ Anterior
+            ‹ 
         </button>
         <button id="nextChapterButton">
-            Siguiente ›
+             ›
         </button>
     </div>
 
@@ -492,6 +564,20 @@
                 <p>${escapeHtml(web.url)}</p>
             `;
 
+            if (web.image) {
+
+                const thumb =
+                    document.createElement("div");
+
+                thumb.className = "card-thumb";
+
+                thumb.style.backgroundImage =
+                    `url("${web.image}")`;
+
+                card.prepend(thumb);
+
+            }
+
             if (deleteMode) {
 
                 const checkbox =
@@ -518,6 +604,25 @@
                     () => openWeb(web.id)
                 );
 
+                const editBtn =
+                    document.createElement("button");
+
+                editBtn.className = "edit-card-btn";
+
+                editBtn.textContent = "✎";
+
+                editBtn.title = "Editar";
+
+                editBtn.addEventListener("click", event => {
+
+                    event.stopPropagation();
+
+                    openEditModal(web.id);
+
+                });
+
+                card.appendChild(editBtn);
+
             }
 
             webList.appendChild(card);
@@ -526,18 +631,169 @@
 
 
     /* =========================
-       ADD
+       ADD / EDIT
     ========================= */
+
+    let editingWebId = null;
+    let pendingImageValue = "";
+
+    const modalTitle =
+        document.getElementById("modalTitle");
+
+    const submitButton =
+        document.getElementById("submitButton");
+
+    const imageInput =
+        document.getElementById("image");
+
+    const imagePreview =
+        document.getElementById("imagePreview");
+
+    const removeImageButton =
+        document.getElementById("removeImageButton");
+
+
+    function isDataUrl(value) {
+        return !!value && value.startsWith("data:");
+    }
+
+
+    /*
+     * Actualiza el estado de la imagen a guardar (URL o base64) y
+     * su vista previa. `displayText` es lo que se muestra en el
+     * input: para una imagen pegada del portapapeles no mostramos
+     * el base64 entero, solo un texto indicativo.
+     */
+    function setImage(value, displayText) {
+
+        pendingImageValue = value || "";
+
+        imageInput.value =
+            displayText !== undefined ? displayText : pendingImageValue;
+
+        if (pendingImageValue) {
+
+            imagePreview.src = pendingImageValue;
+
+            imagePreview.style.display = "block";
+
+            removeImageButton.style.display = "inline";
+
+        } else {
+
+            imagePreview.style.display = "none";
+
+            removeImageButton.style.display = "none";
+
+        }
+
+    }
+
+
+    /*
+     * Al pegar en el campo de imagen: si el portapapeles trae una
+     * imagen (copiada de otra web, un explorador de archivos, una
+     * captura...), la convertimos a base64 con FileReader. Si trae
+     * texto (una URL), dejamos que se pegue normal y la guardamos
+     * tal cual.
+     */
+    imageInput.addEventListener("paste", event => {
+
+        const items = event.clipboardData?.items;
+
+        if (items) {
+
+            for (const item of items) {
+
+                if (item.type.startsWith("image/")) {
+
+                    event.preventDefault();
+
+                    const file = item.getAsFile();
+
+                    const reader = new FileReader();
+
+                    reader.onload = () => {
+                        setImage(reader.result, "[Imagen pegada]");
+                    };
+
+                    reader.readAsDataURL(file);
+
+                    return;
+
+                }
+
+            }
+
+        }
+
+        setTimeout(() => {
+            setImage(imageInput.value.trim());
+        }, 0);
+
+    });
+
+
+    imageInput.addEventListener("input", () => {
+        setImage(imageInput.value.trim());
+    });
+
+
+    removeImageButton.addEventListener("click", () => {
+        setImage("", "");
+    });
+
 
     document
         .getElementById("addButton")
-        .addEventListener("click", () => {
+        .addEventListener("click", openAddModal);
 
-            addModal.classList.add("active");
 
-            document.getElementById("title").focus();
+    function openAddModal() {
 
-        });
+        editingWebId = null;
+
+        modalTitle.textContent = "Añadir web";
+
+        submitButton.textContent = "Añadir";
+
+        addForm.reset();
+
+        setImage("", "");
+
+        addModal.classList.add("active");
+
+        document.getElementById("title").focus();
+
+    }
+
+
+    function openEditModal(id) {
+
+        const web = webs.find(item => item.id === id);
+
+        if (!web) return;
+
+        editingWebId = id;
+
+        modalTitle.textContent = "Editar web";
+
+        submitButton.textContent = "Guardar";
+
+        document.getElementById("title").value = web.title;
+
+        document.getElementById("url").value = web.url;
+
+        setImage(
+            web.image || "",
+            isDataUrl(web.image) ? "[Imagen pegada]" : (web.image || "")
+        );
+
+        addModal.classList.add("active");
+
+        document.getElementById("title").focus();
+
+    }
 
 
     document
@@ -550,6 +806,10 @@
         addModal.classList.remove("active");
 
         addForm.reset();
+
+        editingWebId = null;
+
+        setImage("", "");
 
     }
 
@@ -579,11 +839,29 @@
             return;
         }
 
-        webs.push({
-            id: crypto.randomUUID(),
-            title,
-            url
-        });
+        const image = pendingImageValue;
+
+        if (editingWebId) {
+
+            const web =
+                webs.find(item => item.id === editingWebId);
+
+            if (web) {
+                web.title = title;
+                web.url = url;
+                web.image = image;
+            }
+
+        } else {
+
+            webs.push({
+                id: crypto.randomUUID(),
+                title,
+                url,
+                image
+            });
+
+        }
 
         saveWebs();
 
@@ -644,11 +922,6 @@
                 checkbox => checkbox.dataset.id
             );
 
-            if (selected.length === 0) {
-                alert("Selecciona al menos una web.");
-                return;
-            }
-
             webs = webs.filter(
                 web => !selected.includes(web.id)
             );
@@ -692,11 +965,59 @@
     ========================= */
 
     /*
-     * Busca el último número que aparece en la URL (normalmente
-     * el capítulo) y le suma/resta `delta`. Mantiene los ceros a
-     * la izquierda si los había (p.ej. "007" -> "008").
+     * Busca el número de capítulo en la URL y le suma/resta
+     * `delta`. Soporta dos formatos:
+     *
+     *  1. "-{capitulo}_{pagina}"  →  ej. "...-1_01"
+     *     Se detecta el guion seguido de un número (entero o con
+     *     decimal) y un guion bajo. Solo se toca el número del
+     *     capítulo; la página ("_01") se deja tal cual.
+     *
+     *     Si el capítulo tiene decimales (ej. "0.5", capítulos
+     *     extra/especiales), en vez de sumar el delta al decimal
+     *     (lo que daría "1.5"), se redondea al entero completo en
+     *     la dirección del desplazamiento: "Siguiente" redondea
+     *     hacia arriba (0.5 → 1), "Anterior" redondea hacia abajo
+     *     (0.5 → 0). Esto es una suposición razonable para
+     *     capítulos especiales — dime si tu caso es distinto.
+     *
+     *  2. Cualquier otro caso: se usa el último número que
+     *     aparezca en la URL (comportamiento anterior), con
+     *     ceros a la izquierda preservados.
      */
     function shiftChapterUrl(url, delta) {
+
+        const chapterPageMatches = [
+            ...url.matchAll(/-(\d+(?:\.\d+)?)_(\d+)/g)
+        ];
+
+        if (chapterPageMatches.length > 0) {
+
+            const match =
+                chapterPageMatches[chapterPageMatches.length - 1];
+
+            const chapterStr = match[1];
+
+            const chapterNum = parseFloat(chapterStr);
+
+            const newChapterNum = chapterStr.includes(".")
+                ? (delta > 0
+                    ? Math.ceil(chapterNum)
+                    : Math.floor(chapterNum))
+                : chapterNum + delta;
+
+            if (newChapterNum < 0) return null;
+
+            const start = match.index + 1; // +1 para saltar el "-"
+            const end = start + chapterStr.length;
+
+            return (
+                url.slice(0, start) +
+                newChapterNum +
+                url.slice(end)
+            );
+
+        }
 
         const match = url.match(/(\d+)(?!.*\d)/);
 
