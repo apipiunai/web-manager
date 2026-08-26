@@ -202,6 +202,38 @@
             border-radius: 12px;
         }
 
+        .modal-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .modal-header h2 {
+            margin-bottom: 0;
+        }
+
+        .modal-header-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .btn-small {
+            padding: 10px 15px;
+            border-radius: 6px;
+            background: #2a2a2a;
+            color: #aaa;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .btn-small:hover {
+            background: #3a3a3a;
+            color: white;
+        }
+
         .modal-content h2 {
             margin-bottom: 25px;
         }
@@ -402,7 +434,29 @@
 
         <div class="modal-content">
 
-            <h2 id="modalTitle">Añadir web</h2>
+            <div class="modal-header">
+
+                <h2 id="modalTitle"></h2>
+
+                <div class="modal-header-actions">
+
+                    <button type="button" class="btn danger btn-small" id="deleteWebButton"
+                        style="display:none; margin-right: auto;">
+                        Delete
+                    </button>
+
+                    <button type="button" class="btn-small" id="copyWebButton" style="display:none;"
+                        title="Copiar JSON de esta web">
+                        Export
+                    </button>
+
+                    <button type="button" class="btn-small" id="cancelAddButton">
+                        Cancel
+                    </button>
+
+                </div>
+
+            </div>
 
 
             <form id="addForm">
@@ -430,35 +484,23 @@
                 <div class="form-group">
 
                     <label for="image">
-                        Imagen (opcional)
+                        Image (optional)
                     </label>
 
                     <input id="image" type="text"
-                        placeholder="Pega una URL de imagen, o pega (Ctrl+V) una imagen copiada">
+                        placeholder="Paste an image URL, or paste (Ctrl+V) a copied image">
 
                     <img class="image-preview" id="imagePreview" alt="">
 
                     <button type="button" class="remove-image-btn" id="removeImageButton">
-                        Quitar imagen
+                        Remove image
                     </button>
 
                 </div>
 
                 <div class="modal-actions">
 
-                    <button type="button" class="btn danger" id="deleteWebButton"
-                        style="display:none; margin-right: auto;">
-                        Delete
-                    </button>
-
-                    <button type="button" class="btn est-btn" id="copyWebButton"
-                        style="display:none; margin-right: auto;" title="Copiar JSON de esta web">
-                        Export
-                    </button>
-                    <button type="button" class="btn est-btn" id="cancelAddButton">
-                        Cancel
-                    </button>
-
+                   
 
                     <button type="submit" class="btn est-btn primary" id="submitButton">
                         Add
@@ -481,12 +523,12 @@
 
         <div class="modal-content">
 
-            <h2>Importar JSON</h2>
+            <h2>Import JSON</h2>
 
             <div class="form-group">
 
                 <label for="importJsonInput">
-                    Pega aquí el array JSON de webs
+                    Paste the JSON array of webs here
                 </label>
 
                 <textarea id="importJsonInput" rows="8"
@@ -497,12 +539,12 @@
             <div class="modal-actions" style="justify-content: space-between;">
 
                 <button type="button" class="btn" id="cancelImportButton">
-                    Cancelar
+                    Cancel
                 </button>
 
                 <div style="display: flex; gap: 10px;">
-                    <button type="button" class="btn" id="importAppendButton" title="Añadir a las webs existentes">
-                        Añadir
+                    <button type="button" class="btn" id="importAppendButton" title="Add to existing webs">
+                        Add
                     </button>
                     <!--<button type="button" class="btn primary" id="importReplaceButton" title="Reemplazar toda la lista">
                         Reemplazar todo
@@ -620,7 +662,7 @@
 
                 webList.innerHTML = `
                 <div class="empty">
-                    No hay webs añadidas.
+                    No webs added.
                 </div>
             `;
 
@@ -666,7 +708,7 @@
 
                 editBtn.textContent = "✎";
 
-                editBtn.title = "Editar";
+                editBtn.title = "Edit";
 
                 editBtn.addEventListener("click", event => {
 
@@ -761,7 +803,7 @@
                         const reader = new FileReader();
 
                         reader.onload = () => {
-                            setImage(reader.result, "[Imagen pegada]");
+                            setImage(reader.result, "[Image pasted]");
                         };
 
                         reader.readAsDataURL(file);
@@ -800,9 +842,8 @@
 
             editingWebId = null;
 
-            modalTitle.textContent = "Añadir web";
 
-            submitButton.textContent = "Añadir";
+            submitButton.textContent = "Add";
 
             deleteWebButton.style.display = "none";
 
@@ -827,7 +868,6 @@
 
             editingWebId = id;
 
-            modalTitle.textContent = "Edit web";
 
             submitButton.textContent = "Save";
 
@@ -841,7 +881,7 @@
 
             setImage(
                 web.image || "",
-                isDataUrl(web.image) ? "[Imagen pegada]" : (web.image || "")
+                isDataUrl(web.image) ? "[Pasted image]" : (web.image || "")
             );
 
             addModal.classList.add("active");
@@ -1027,7 +1067,7 @@
 
             try {
 
-                if (navigator.clipboard && navigator.clipboard.writeText) { 
+                if (navigator.clipboard && navigator.clipboard.writeText) {
                     await navigator.clipboard.writeText(json);
                 } else {
                     const textarea = document.createElement("textarea");
