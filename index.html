@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -124,10 +125,10 @@
             cursor: pointer;
         }
 
-        .edit-card-btn {
+        .edit-card-btn,
+        .copy-card-btn {
             position: absolute;
             top: 15px;
-            right: 15px;
             width: 30px;
             height: 30px;
             border-radius: 6px;
@@ -140,8 +141,20 @@
             transition: .15s;
         }
 
+        .edit-card-btn {
+            right: 15px;
+        }
+
+        .copy-card-btn {
+            right: 51px;
+        }
+
         .edit-card-btn:hover {
             background-color: #6f9bf4;
+        }
+
+        .copy-card-btn:hover {
+            background-color: #4caf6e;
         }
 
         .empty {
@@ -335,189 +348,160 @@
 
 <body>
 
-<!-- =========================
+    <!-- =========================
      HOME
 ========================= -->
 
-<div id="home">
+    <div id="home">
 
-    <div class="header">
+        <div class="header">
 
-        <span></span>
+            <span></span>
 
-        <div class="actions" id="normalActions">
-            <button class="btn json-btn" id="copyJsonButton" title="Copiar todo el JSON al portapapeles">
-                Copy
-            </button>
+            <div class="actions" id="normalActions">
+                <button class="btn json-btn" id="copyJsonButton" title="Copiar todo el JSON al portapapeles">
+                    Export
+                </button>
 
-            <button class="btn json-btn" id="importJsonButton" title="Importar array de webs en JSON">
-                Import
-            </button>
+                <button class="btn json-btn" id="importJsonButton" title="Importar array de webs en JSON">
+                    Import
+                </button>
 
-            <button class="btn  json-btn primary" id="addButton">
-                Add
-            </button>
-
-            <button class="btn  json-btn danger" id="deleteButton">
-                Delete
-            </button>
-        </div>
-
-        <div class="actions" id="deleteActions">
-
-            <button class="btn" id="cancelDeleteButton">
-                Cancelar
-            </button>
-
-            <button class="btn danger" id="confirmDeleteButton">
-                Confirmar
-            </button>
+                <button class="btn  json-btn primary" id="addButton">
+                    Add
+                </button>
+            </div>
 
         </div>
+
+        <div id="webList" class="web-list"></div>
 
     </div>
 
-    <div id="webList" class="web-list"></div>
 
-</div>
-
-
-<!-- =========================
+    <!-- =========================
      ADD MODAL
 ========================= -->
 
-<div id="addModal" class="modal">
+    <div id="addModal" class="modal">
 
-    <div class="modal-content">
+        <div class="modal-content">
 
-        <h2 id="modalTitle">Añadir web</h2>
+            <h2 id="modalTitle">Añadir web</h2>
 
-        <form id="addForm">
+            <form id="addForm">
 
-            <div class="form-group">
+                <div class="form-group">
 
-                <label for="title">
-                    Título
-                </label>
+                    <label for="title">
+                        Título
+                    </label>
 
-                <input
-                    id="title"
-                    type="text"
-                    placeholder="Mi aplicación"
-                    required
-                >
+                    <input id="title" type="text" placeholder="Mi aplicación" required>
 
-            </div>
+                </div>
 
-            <div class="form-group">
+                <div class="form-group">
 
-                <label for="url">
-                    URL
-                </label>
+                    <label for="url">
+                        URL
+                    </label>
 
-                <input
-                    id="url"
-                    type="url"
-                    placeholder="https://ejemplo.com"
-                    required
-                >
+                    <input id="url" type="url" placeholder="https://ejemplo.com" required>
 
-            </div>
+                </div>
 
-            <div class="form-group">
+                <div class="form-group">
 
-                <label for="image">
-                    Imagen (opcional)
-                </label>
+                    <label for="image">
+                        Imagen (opcional)
+                    </label>
 
-                <input
-                    id="image"
-                    type="text"
-                    placeholder="Pega una URL de imagen, o pega (Ctrl+V) una imagen copiada"
-                >
+                    <input id="image" type="text"
+                        placeholder="Pega una URL de imagen, o pega (Ctrl+V) una imagen copiada">
 
-                <img class="image-preview" id="imagePreview" alt="">
+                    <img class="image-preview" id="imagePreview" alt="">
 
-                <button
-                    type="button"
-                    class="remove-image-btn"
-                    id="removeImageButton"
-                >
-                    Quitar imagen
-                </button>
+                    <button type="button" class="remove-image-btn" id="removeImageButton">
+                        Quitar imagen
+                    </button>
 
-            </div>
+                </div>
 
-            <div class="modal-actions">
+                <div class="modal-actions">
 
-                <button
-                    type="button"
-                    class="btn"
-                    id="cancelAddButton"
-                >
-                    Cancelar
-                </button>
+                    <button
+                        type="button"
+                        class="btn danger"
+                        id="deleteWebButton"
+                        style="display:none; margin-right: auto;"
+                    >
+                        Borrar
+                    </button>
 
-                <button
-                    type="submit"
-                    class="btn primary"
-                    id="submitButton"
-                >
-                    Añadir
-                </button>
+                    <button
+                        type="button"
+                        class="btn"
+                        id="copyWebButton"
+                        style="display:none; margin-right: auto;"
+                        title="Copiar JSON de esta web"
+                    >
+                        Copiar
+                    </button>
 
-            </div>
+                    <button type="button" class="btn" id="cancelAddButton">
+                        Cancelar
+                    </button>
 
-        </form>
+                    <button type="submit" class="btn primary" id="submitButton">
+                        Añadir
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
 
     </div>
 
-</div>
 
-
-<!-- =========================
+    <!-- =========================
      IMPORT MODAL
 ========================= -->
 
-<div id="importModal" class="modal">
+    <div id="importModal" class="modal">
 
-    <div class="modal-content">
+        <div class="modal-content">
 
-        <h2>Importar JSON</h2>
+            <h2>Importar JSON</h2>
 
-        <div class="form-group">
+            <div class="form-group">
 
-            <label for="importJsonInput">
-                Pega aquí el array JSON de webs
-            </label>
+                <label for="importJsonInput">
+                    Pega aquí el array JSON de webs
+                </label>
 
-            <textarea
-                id="importJsonInput"
-                rows="8"
-                placeholder='[&#10;  {&#10;    "title": "Mi web",&#10;    "url": "https://ejemplo.com",&#10;    "image": ""&#10;  }&#10;]'
-            ></textarea>
+                <textarea id="importJsonInput" rows="8"
+                    placeholder='[&#10;  {&#10;    "title": "Mi web",&#10;    "url": "https://ejemplo.com",&#10;    "image": ""&#10;  }&#10;]'></textarea>
 
-        </div>
+            </div>
 
-        <div class="modal-actions" style="justify-content: space-between;">
+            <div class="modal-actions" style="justify-content: space-between;">
 
-            <button
-                type="button"
-                class="btn"
-                id="cancelImportButton"
-            >
-                Cancelar
-            </button>
-
-            <div style="display: flex; gap: 10px;">
-                <button
-                    type="button"
-                    class="btn"
-                    id="importAppendButton"
-                    title="Añadir a las webs existentes"
-                >
-                    Añadir
+                <button type="button" class="btn" id="cancelImportButton">
+                    Cancelar
                 </button>
+
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn" id="importAppendButton" title="Añadir a las webs existentes">
+                        Añadir
+                    </button>
+
+                    <button type="button" class="btn primary" id="importReplaceButton" title="Reemplazar toda la lista">
+                        Reemplazar todo
+                    </button>
+                </div>
 
             </div>
 
@@ -525,177 +509,144 @@
 
     </div>
 
-</div>
 
-
-<!-- =========================
+    <!-- =========================
      VIEWER
 ========================= -->
 
-<div id="viewer">
+    <div id="viewer">
 
-    <button id="backButton">
-        ←
-    </button>
+        <button id="backButton">
+            ←
+        </button>
 
-    <div id="chapterNav">
-        <button id="prevChapterButton">
-            ‹ 
-        </button>
-        <button id="nextChapterButton">
-             ›
-        </button>
+        <div id="chapterNav">
+            <button id="prevChapterButton">
+                ‹
+            </button>
+            <button id="nextChapterButton">
+                ›
+            </button>
+        </div>
+
+        <iframe id="webFrame" allow="fullscreen"></iframe>
+
     </div>
 
-    <iframe
-        id="webFrame"
-        allow="fullscreen"
-    ></iframe>
 
-</div>
+    <script>
 
+        const STORAGE_KEY = "embeddedWebs";
 
-<script>
-
-    const STORAGE_KEY = "embeddedWebs";
-
-    let webs = loadWebs();
-    let deleteMode = false;
-    let currentWebId = null;
+        let webs = loadWebs();
+        let currentWebId = null;
 
 
-    /* =========================
-       STORAGE
-    ========================= */
+        /* =========================
+           STORAGE
+        ========================= */
 
-    function loadWebs() {
-        try {
-            return JSON.parse(
-                localStorage.getItem(STORAGE_KEY)
-            ) || [];
-        } catch {
-            return [];
+        function loadWebs() {
+            try {
+                return JSON.parse(
+                    localStorage.getItem(STORAGE_KEY)
+                ) || [];
+            } catch {
+                return [];
+            }
         }
-    }
 
 
-    function saveWebs() {
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify(webs)
-        );
-    }
+        function saveWebs() {
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify(webs)
+            );
+        }
 
 
-    /* =========================
-       DOM
-    ========================= */
+        /* =========================
+           DOM
+        ========================= */
 
-    const webList = document.getElementById("webList");
+        const webList = document.getElementById("webList");
 
-    const addModal = document.getElementById("addModal");
+        const addModal = document.getElementById("addModal");
 
-    const addForm = document.getElementById("addForm");
+        const addForm = document.getElementById("addForm");
 
-    const viewer = document.getElementById("viewer");
+        const viewer = document.getElementById("viewer");
 
-    const webFrame = document.getElementById("webFrame");
+        const webFrame = document.getElementById("webFrame");
 
-    const normalActions =
-        document.getElementById("normalActions");
+        const normalActions =
+            document.getElementById("normalActions");
         normalActions.style.justifyContent = "end";
 
-    const deleteActions =
-        document.getElementById("deleteActions");
+        const importModal =
+            document.getElementById("importModal");
 
-    const importModal =
-        document.getElementById("importModal");
+        const importJsonInput =
+            document.getElementById("importJsonInput");
 
-    const importJsonInput =
-        document.getElementById("importJsonInput");
+        const copyJsonButton =
+            document.getElementById("copyJsonButton");
 
-    const copyJsonButton =
-        document.getElementById("copyJsonButton");
+        const importJsonButton =
+            document.getElementById("importJsonButton");
 
-    const importJsonButton =
-        document.getElementById("importJsonButton");
+        const cancelImportButton =
+            document.getElementById("cancelImportButton");
 
-    const cancelImportButton =
-        document.getElementById("cancelImportButton");
-
-    const importAppendButton =
-        document.getElementById("importAppendButton");
-
-    const importReplaceButton =
-        document.getElementById("importReplaceButton");
+        const importAppendButton =
+            document.getElementById("importAppendButton");
 
 
-    /* =========================
-       RENDER
-    ========================= */
+        /* =========================
+           RENDER
+        ========================= */
 
-    function render() {
+        function render() {
 
-        webList.innerHTML = "";
+            webList.innerHTML = "";
 
-        if (webs.length === 0) {
+            if (webs.length === 0) {
 
-            webList.innerHTML = `
+                webList.innerHTML = `
                 <div class="empty">
                     No hay webs añadidas.
                 </div>
             `;
 
-            return;
-        }
+                return;
+            }
 
-        webs.forEach(web => {
+            webs.forEach(web => {
 
-            const card = document.createElement("div");
+                const card = document.createElement("div");
 
-            card.className = "web-card";
+                card.className = "web-card";
 
-            card.dataset.id = web.id;
+                card.dataset.id = web.id;
 
-            card.innerHTML = `
+                card.innerHTML = `
                 <h3>${escapeHtml(web.title)}</h3>
                 <p>${escapeHtml(web.url)}</p>
             `;
 
-            if (web.image) {
+                if (web.image) {
 
-                const thumb =
-                    document.createElement("div");
+                    const thumb =
+                        document.createElement("div");
 
-                thumb.className = "card-thumb";
+                    thumb.className = "card-thumb";
 
-                thumb.style.backgroundImage =
-                    `url("${web.image}")`;
+                    thumb.style.backgroundImage =
+                        `url("${web.image}")`;
 
-                card.prepend(thumb);
+                    card.prepend(thumb);
 
-            }
-
-            if (deleteMode) {
-
-                const checkbox =
-                    document.createElement("input");
-
-                checkbox.type = "checkbox";
-
-                checkbox.className =
-                    "delete-checkbox";
-
-                checkbox.dataset.id = web.id;
-
-                checkbox.addEventListener(
-                    "click",
-                    event => event.stopPropagation()
-                );
-
-                card.appendChild(checkbox);
-
-            } else {
+                }
 
                 card.addEventListener(
                     "click",
@@ -721,359 +672,239 @@
 
                 card.appendChild(editBtn);
 
-            }
 
-            webList.appendChild(card);
-        });
-    }
-
-
-    /* =========================
-       ADD / EDIT
-    ========================= */
-
-    let editingWebId = null;
-    let pendingImageValue = "";
-
-    const modalTitle =
-        document.getElementById("modalTitle");
-
-    const submitButton =
-        document.getElementById("submitButton");
-
-    const imageInput =
-        document.getElementById("image");
-
-    const imagePreview =
-        document.getElementById("imagePreview");
-
-    const removeImageButton =
-        document.getElementById("removeImageButton");
-
-
-    function isDataUrl(value) {
-        return !!value && value.startsWith("data:");
-    }
-
-
-    /*
-     * Actualiza el estado de la imagen a guardar (URL o base64) y
-     * su vista previa. `displayText` es lo que se muestra en el
-     * input: para una imagen pegada del portapapeles no mostramos
-     * el base64 entero, solo un texto indicativo.
-     */
-    function setImage(value, displayText) {
-
-        pendingImageValue = value || "";
-
-        imageInput.value =
-            displayText !== undefined ? displayText : pendingImageValue;
-
-        if (pendingImageValue) {
-
-            imagePreview.src = pendingImageValue;
-
-            imagePreview.style.display = "block";
-
-            removeImageButton.style.display = "inline";
-
-        } else {
-
-            imagePreview.style.display = "none";
-
-            removeImageButton.style.display = "none";
-
-        }
-
-    }
-
-
-    /*
-     * Al pegar en el campo de imagen: si el portapapeles trae una
-     * imagen (copiada de otra web, un explorador de archivos, una
-     * captura...), la convertimos a base64 con FileReader. Si trae
-     * texto (una URL), dejamos que se pegue normal y la guardamos
-     * tal cual.
-     */
-    imageInput.addEventListener("paste", event => {
-
-        const items = event.clipboardData?.items;
-
-        if (items) {
-
-            for (const item of items) {
-
-                if (item.type.startsWith("image/")) {
-
-                    event.preventDefault();
-
-                    const file = item.getAsFile();
-
-                    const reader = new FileReader();
-
-                    reader.onload = () => {
-                        setImage(reader.result, "[Imagen pegada]");
-                    };
-
-                    reader.readAsDataURL(file);
-
-                    return;
-
-                }
-
-            }
-
-        }
-
-        setTimeout(() => {
-            setImage(imageInput.value.trim());
-        }, 0);
-
-    });
-
-
-    imageInput.addEventListener("input", () => {
-        setImage(imageInput.value.trim());
-    });
-
-
-    removeImageButton.addEventListener("click", () => {
-        setImage("", "");
-    });
-
-
-    document
-        .getElementById("addButton")
-        .addEventListener("click", openAddModal);
-
-
-    function openAddModal() {
-
-        editingWebId = null;
-
-        modalTitle.textContent = "Añadir web";
-
-        submitButton.textContent = "Añadir";
-
-        addForm.reset();
-
-        setImage("", "");
-
-        addModal.classList.add("active");
-
-        document.getElementById("title").focus();
-
-    }
-
-
-    function openEditModal(id) {
-
-        const web = webs.find(item => item.id === id);
-
-        if (!web) return;
-
-        editingWebId = id;
-
-        modalTitle.textContent = "Editar web";
-
-        submitButton.textContent = "Guardar";
-
-        document.getElementById("title").value = web.title;
-
-        document.getElementById("url").value = web.url;
-
-        setImage(
-            web.image || "",
-            isDataUrl(web.image) ? "[Imagen pegada]" : (web.image || "")
-        );
-
-        addModal.classList.add("active");
-
-        document.getElementById("title").focus();
-
-    }
-
-
-    document
-        .getElementById("cancelAddButton")
-        .addEventListener("click", closeAddModal);
-
-
-    function closeAddModal() {
-
-        addModal.classList.remove("active");
-
-        addForm.reset();
-
-        editingWebId = null;
-
-        setImage("", "");
-
-    }
-
-
-    addForm.addEventListener("submit", event => {
-
-        event.preventDefault();
-
-        const title =
-            document.getElementById("title")
-                .value
-                .trim();
-
-        let url =
-            document.getElementById("url")
-                .value
-                .trim();
-
-        if (!/^https?:\/\//i.test(url)) {
-            url = "https://" + url;
-        }
-
-        try {
-            new URL(url);
-        } catch {
-            alert("La URL no es válida.");
-            return;
-        }
-
-        const image = pendingImageValue;
-
-        if (editingWebId) {
-
-            const web =
-                webs.find(item => item.id === editingWebId);
-
-            if (web) {
-                web.title = title;
-                web.url = url;
-                web.image = image;
-            }
-
-        } else {
-
-            webs.push({
-                id: crypto.randomUUID(),
-                title,
-                url,
-                image
+                webList.appendChild(card);
             });
-
         }
 
-        saveWebs();
 
-        closeAddModal();
+        /* =========================
+           ADD / EDIT
+        ========================= */
 
-        render();
+        let editingWebId = null;
+        let pendingImageValue = "";
 
-    });
+        const modalTitle =
+            document.getElementById("modalTitle");
+
+        const submitButton =
+            document.getElementById("submitButton");
+
+        const imageInput =
+            document.getElementById("image");
+
+        const imagePreview =
+            document.getElementById("imagePreview");
+
+        const removeImageButton =
+            document.getElementById("removeImageButton");
+
+        const deleteWebButton =
+            document.getElementById("deleteWebButton");
+
+        const copyWebButton =
+            document.getElementById("copyWebButton");
 
 
-    /* =========================
-       IMPORT / EXPORT JSON
-    ========================= */
+        function isDataUrl(value) {
+            return !!value && value.startsWith("data:");
+        }
 
-    async function copyStorageJson() {
 
-        const json = JSON.stringify(webs.map(webs => {
-            return {
-                title: webs.title,
-                url: webs.url
-            };
-        }), null, 2);
+        function setImage(value, displayText) {
 
-        try {
+            pendingImageValue = value || "";
 
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                await navigator.clipboard.writeText(json);
+            imageInput.value =
+                displayText !== undefined ? displayText : pendingImageValue;
+
+            if (pendingImageValue) {
+
+                imagePreview.src = pendingImageValue;
+
+                imagePreview.style.display = "block";
+
+                removeImageButton.style.display = "inline";
+
             } else {
-                const textarea = document.createElement("textarea");
-                textarea.value = json;
-                textarea.style.position = "fixed";
-                textarea.style.opacity = "0";
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand("copy");
-                document.body.removeChild(textarea);
+
+                imagePreview.style.display = "none";
+
+                removeImageButton.style.display = "none";
+
             }
-
-            if (copyJsonButton) {
-                const originalText = copyJsonButton.textContent;
-                copyJsonButton.textContent = "¡Copied!";
-                setTimeout(() => {
-                    copyJsonButton.textContent = originalText;
-                }, 2000);
-            }
-
-            return json;
-
-        } catch (err) {
-
-            console.error("Error al copiar al portapapeles:", err);
-            alert("No se pudo copiar automáticamente al portapapeles.");
-            return json;
 
         }
 
-    }
 
+        imageInput.addEventListener("paste", event => {
 
-    function importStorageJson(rawInput, replaceAll = false) {
+            const items = event.clipboardData?.items;
 
-        try {
+            if (items) {
 
-            let data = rawInput;
+                for (const item of items) {
 
-            if (typeof rawInput === "string") {
+                    if (item.type.startsWith("image/")) {
 
-                const trimmed = rawInput.trim();
+                        event.preventDefault();
 
-                if (!trimmed) {
-                    alert("Por favor, pega un JSON válido.");
-                    return false;
-                }
+                        const file = item.getAsFile();
 
-                data = JSON.parse(trimmed);
+                        const reader = new FileReader();
 
-            }
+                        reader.onload = () => {
+                            setImage(reader.result, "[Imagen pegada]");
+                        };
 
-            if (!Array.isArray(data)) {
+                        reader.readAsDataURL(file);
 
-                if (data && typeof data === "object") {
-                    data = [data];
-                } else {
-                    throw new Error("El JSON debe ser un array de objetos.");
-                }
+                        return;
 
-            }
-
-            const parsedWebs = [];
-
-            for (const item of data) {
-
-                if (!item || typeof item !== "object") continue;
-
-                let title = String(item.title || "").trim();
-                let url = String(item.url || "").trim();
-                let image = typeof item.image === "string" ? item.image : "";
-
-                if (!url && !title) continue;
-
-                if (url && !/^https?:\/\//i.test(url)) {
-                    url = "https://" + url;
-                }
-
-                if (!title) {
-                    try {
-                        title = new URL(url).hostname;
-                    } catch {
-                        title = url || "Sin título";
                     }
+
                 }
 
-                parsedWebs.push({
-                    id: item.id && typeof item.id === "string" ? item.id : crypto.randomUUID(),
+            }
+
+            setTimeout(() => {
+                setImage(imageInput.value.trim());
+            }, 0);
+
+        });
+
+
+        imageInput.addEventListener("input", () => {
+            setImage(imageInput.value.trim());
+        });
+
+
+        removeImageButton.addEventListener("click", () => {
+            setImage("", "");
+        });
+
+
+        document
+            .getElementById("addButton")
+            .addEventListener("click", openAddModal);
+
+
+        function openAddModal() {
+
+            editingWebId = null;
+
+            modalTitle.textContent = "Añadir web";
+
+            submitButton.textContent = "Añadir";
+
+            deleteWebButton.style.display = "none";
+
+            copyWebButton.style.display = "none";
+
+            addForm.reset();
+
+            setImage("", "");
+
+            addModal.classList.add("active");
+
+            document.getElementById("title").focus();
+
+        }
+
+
+        function openEditModal(id) {
+
+            const web = webs.find(item => item.id === id);
+
+            if (!web) return;
+
+            editingWebId = id;
+
+            modalTitle.textContent = "Editar web";
+
+            submitButton.textContent = "Guardar";
+
+            deleteWebButton.style.display = "block";
+
+            copyWebButton.style.display = "inline-flex";
+
+            document.getElementById("title").value = web.title;
+
+            document.getElementById("url").value = web.url;
+
+            setImage(
+                web.image || "",
+                isDataUrl(web.image) ? "[Imagen pegada]" : (web.image || "")
+            );
+
+            addModal.classList.add("active");
+
+            document.getElementById("title").focus();
+
+        }
+
+
+        document
+            .getElementById("cancelAddButton")
+            .addEventListener("click", closeAddModal);
+
+
+        function closeAddModal() {
+
+            addModal.classList.remove("active");
+
+            addForm.reset();
+
+            editingWebId = null;
+
+            setImage("", "");
+
+        }
+
+
+        addForm.addEventListener("submit", event => {
+
+            event.preventDefault();
+
+            const title =
+                document.getElementById("title")
+                    .value
+                    .trim();
+
+            let url =
+                document.getElementById("url")
+                    .value
+                    .trim();
+
+            if (!/^https?:\/\//i.test(url)) {
+                url = "https://" + url;
+            }
+
+            try {
+                new URL(url);
+            } catch {
+                alert("La URL no es válida.");
+                return;
+            }
+
+            const image = pendingImageValue;
+
+            if (editingWebId) {
+
+                const web =
+                    webs.find(item => item.id === editingWebId);
+
+                if (web) {
+                    web.title = title;
+                    web.url = url;
+                    web.image = image;
+                }
+
+            } else {
+
+                webs.push({
+                    id: crypto.randomUUID(),
                     title,
                     url,
                     image
@@ -1081,366 +912,596 @@
 
             }
 
-            if (parsedWebs.length === 0) {
-                alert("No se encontraron webs válidas en el JSON proporcionado.");
-                return false;
-            }
-
-            if (replaceAll) {
-
-                webs = parsedWebs;
-
-            } else {
-
-                const existingIds = new Set(webs.map(w => w.id));
-
-                for (const item of parsedWebs) {
-                    if (existingIds.has(item.id)) {
-                        item.id = crypto.randomUUID();
-                    }
-                    webs.push(item);
-                }
-
-            }
-
             saveWebs();
+
+            closeAddModal();
 
             render();
 
-            return true;
+        });
 
-        } catch (err) {
 
-            console.error("Error al importar JSON:", err);
-            alert("Error al procesar el JSON: " + err.message);
-            return false;
+        /* =========================
+           DELETE WEB
+        ========================= */
+
+        function deleteWeb(id) {
+
+            webs = webs.filter(web => web.id !== id);
+
+            saveWebs();
+
+            closeAddModal();
+
+            render();
 
         }
 
-    }
+
+        deleteWebButton.addEventListener("click", () => {
+
+            if (!editingWebId) return;
+
+            const web = webs.find(item => item.id === editingWebId);
+
+            const name = web ? `"${web.title}"` : "esta web";
+
+            if (confirm(`¿Borrar ${name}?`)) {
+                deleteWeb(editingWebId);
+            }
+
+        });
 
 
-    window.copyStorageJson = copyStorageJson;
-    window.importStorageJson = importStorageJson;
+        copyWebButton.addEventListener("click", () => {
+
+            if (!editingWebId) return;
+
+            copyWebJson(editingWebId, copyWebButton);
+
+        });
 
 
-    copyJsonButton.addEventListener("click", () => {
-        copyStorageJson();
-    });
+        /* =========================
+           IMPORT / EXPORT JSON
+        ========================= */
+
+        async function copyWebJson(id, btnEl) {
+
+            const web = webs.find(item => item.id === id);
+
+            if (!web) return;
+
+            const json = JSON.stringify(
+                { title: web.title, url: web.url },
+                null,
+                2
+            );
+
+            try {
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(json);
+                } else {
+                    const textarea = document.createElement("textarea");
+                    textarea.value = json;
+                    textarea.style.position = "fixed";
+                    textarea.style.opacity = "0";
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(textarea);
+                }
+
+                if (btnEl) {
+                    const prev = btnEl.textContent;
+                    btnEl.textContent = "✓";
+                    setTimeout(() => { btnEl.textContent = prev; }, 1500);
+                }
+
+            } catch (err) {
+
+                console.error("Error al copiar JSON de la web:", err);
+                alert("No se pudo copiar al portapapeles.");
+
+            }
+
+        }
 
 
-    importJsonButton.addEventListener("click", () => {
-        importJsonInput.value = "";
-        importModal.classList.add("active");
-        importJsonInput.focus();
-    });
+        async function copyStorageJson() {
+
+            const json = JSON.stringify(webs.map(webs => {
+                return {
+                    title: webs.title,
+                    url: webs.url
+                };
+            }), null, 2);
+
+            try {
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(json);
+                } else {
+                    const textarea = document.createElement("textarea");
+                    textarea.value = json;
+                    textarea.style.position = "fixed";
+                    textarea.style.opacity = "0";
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(textarea);
+                }
+
+                if (copyJsonButton) {
+                    const originalText = copyJsonButton.textContent;
+                    copyJsonButton.textContent = "¡Copied!";
+                    setTimeout(() => {
+                        copyJsonButton.textContent = originalText;
+                    }, 2000);
+                }
+
+                return json;
+
+            } catch (err) {
+
+                console.error("Error al copiar al portapapeles:", err);
+                alert("No se pudo copiar automáticamente al portapapeles.");
+                return json;
+
+            }
+
+        }
 
 
-    cancelImportButton.addEventListener("click", () => {
-        importModal.classList.remove("active");
-        importJsonInput.value = "";
-    });
+        function importStorageJson(rawInput, replaceAll = false) {
+
+            try {
+
+                let data = rawInput;
+
+                if (typeof rawInput === "string") {
+
+                    const trimmed = rawInput.trim();
+
+                    if (!trimmed) {
+                        alert("Por favor, pega un JSON válido.");
+                        return false;
+                    }
+
+                    data = JSON.parse(trimmed);
+
+                }
+
+                if (!Array.isArray(data)) {
+
+                    if (data && typeof data === "object") {
+                        data = [data];
+                    } else {
+                        throw new Error("El JSON debe ser un array de objetos.");
+                    }
+
+                }
+
+                const parsedWebs = [];
+
+                for (const item of data) {
+
+                    if (!item || typeof item !== "object") continue;
+
+                    let title = String(item.title || "").trim();
+                    let url = String(item.url || "").trim();
+                    let image = typeof item.image === "string" ? item.image : "";
+
+                    if (!url && !title) continue;
+
+                    if (url && !/^https?:\/\//i.test(url)) {
+                        url = "https://" + url;
+                    }
+
+                    if (!title) {
+                        try {
+                            title = new URL(url).hostname;
+                        } catch {
+                            title = url || "Sin título";
+                        }
+                    }
+
+                    parsedWebs.push({
+                        id: item.id && typeof item.id === "string" ? item.id : crypto.randomUUID(),
+                        title,
+                        url,
+                        image
+                    });
+
+                }
+
+                if (parsedWebs.length === 0) {
+                    alert("No se encontraron webs válidas en el JSON proporcionado.");
+                    return false;
+                }
+
+                if (replaceAll) {
+
+                    webs = parsedWebs;
+
+                } else {
+
+                    const existingIds = new Set(webs.map(w => w.id));
+
+                    for (const item of parsedWebs) {
+                        if (existingIds.has(item.id)) {
+                            item.id = crypto.randomUUID();
+                        }
+                        webs.push(item);
+                    }
+
+                }
+
+                saveWebs();
+
+                render();
+
+                return true;
+
+            } catch (err) {
+
+                console.error("Error al importar JSON:", err);
+                alert("Error al procesar el JSON: " + err.message);
+                return false;
+
+            }
+
+        }
 
 
-    importAppendButton.addEventListener("click", () => {
-        const success = importStorageJson(importJsonInput.value, false);
-        if (success) {
+        window.copyStorageJson = copyStorageJson;
+        window.importStorageJson = importStorageJson;
+
+
+        copyJsonButton.addEventListener("click", () => {
+            copyStorageJson();
+        });
+
+
+        importJsonButton.addEventListener("click", () => {
+            importJsonInput.value = "";
+            importModal.classList.add("active");
+            importJsonInput.focus();
+        });
+
+
+        cancelImportButton.addEventListener("click", () => {
             importModal.classList.remove("active");
             importJsonInput.value = "";
+        });
+
+
+        importAppendButton.addEventListener("click", () => {
+            const success = importStorageJson(importJsonInput.value, false);
+            if (success) {
+                importModal.classList.remove("active");
+                importJsonInput.value = "";
+            }
+        });
+
+
+        importModal.addEventListener("click", event => {
+            if (event.target === importModal) {
+                importModal.classList.remove("active");
+                importJsonInput.value = "";
+            }
+        });
+
+
+        const importReplaceButton =
+            document.getElementById("importReplaceButton");
+
+        importReplaceButton.addEventListener("click", () => {
+            if (webs.length > 0) {
+                const confirmReplace = confirm(
+                    "¿Estás seguro de que deseas reemplazar todas las webs existentes con el array importado?"
+                );
+                if (!confirmReplace) return;
+            }
+
+            const success = importStorageJson(importJsonInput.value, true);
+            if (success) {
+                importModal.classList.remove("active");
+                importJsonInput.value = "";
+            }
+        });
+
+
+        /* =========================
+           OPEN WEB
+        ========================= */
+
+        function openWeb(id) {
+
+            const web = webs.find(
+                item => item.id === id
+            );
+
+            if (!web) return;
+
+            currentWebId = id;
+
+            webFrame.src = web.url;
+
+            viewer.classList.add("active");
+
         }
-    });
 
 
-    /* =========================
-       DELETE MODE
-    ========================= */
+        /* =========================
+           CHAPTER NAV
+        ========================= */
 
-    document
-        .getElementById("deleteButton")
-        .addEventListener("click", () => {
+        /*
+         * Busca el número de capítulo en la URL y le suma/resta
+         * `delta`. Soporta dos formatos:
+         *
+         *  1. "-{capitulo}_{pagina}"  →  ej. "...-1_01"
+         *     Se detecta el guion seguido de un número (entero o con
+         *     decimal) y un guion bajo. Solo se toca el número del
+         *     capítulo; la página ("_01") se deja tal cual.
+         *
+         *     Si el capítulo tiene decimales (ej. "0.5", capítulos
+         *     extra/especiales), en vez de sumar el delta al decimal
+         *     (lo que daría "1.5"), se redondea al entero completo en
+         *     la dirección del desplazamiento: "Siguiente" redondea
+         *     hacia arriba (0.5 → 1), "Anterior" redondea hacia abajo
+         *     (0.5 → 0). Esto es una suposición razonable para
+         *     capítulos especiales — dime si tu caso es distinto.
+         *
+         *  2. Cualquier otro caso: se usa el último número que
+         *     aparezca en la URL (comportamiento anterior), con
+         *     ceros a la izquierda preservados.
+         */
+        function shiftChapterUrl(url, delta) {
 
-            if (webs.length === 0) {
+            const chapterPageMatches = [
+                ...url.matchAll(/-(\d+(?:\.\d+)?)_(\d+)/g)
+            ];
+
+            if (chapterPageMatches.length > 0) {
+
+                const match =
+                    chapterPageMatches[chapterPageMatches.length - 1];
+
+                const chapterStr = match[1];
+
+                const chapterNum = parseFloat(chapterStr);
+
+                const newChapterNum = chapterStr.includes(".")
+                    ? (delta > 0
+                        ? Math.ceil(chapterNum)
+                        : Math.floor(chapterNum))
+                    : chapterNum + delta;
+
+                if (newChapterNum < 0) return null;
+
+                const start = match.index + 1; // +1 para saltar el "-"
+                const end = start + chapterStr.length;
+
+                return (
+                    url.slice(0, start) +
+                    newChapterNum +
+                    url.slice(end)
+                );
+
+            }
+
+            const match = url.match(/(\d+)(?!.*\d)/);
+
+            if (!match) return null;
+
+            const numStr = match[1];
+
+            const newNum = parseInt(numStr, 10) + delta;
+
+            if (newNum < 0) return null;
+
+            let newNumStr = String(newNum);
+
+            if (numStr.length > 1 && numStr.startsWith("0")) {
+                newNumStr = newNumStr.padStart(numStr.length, "0");
+            }
+
+            return (
+                url.slice(0, match.index) +
+                newNumStr +
+                url.slice(match.index + numStr.length)
+            );
+
+        }
+
+
+        function goToChapter(delta) {
+
+            if (!currentWebId) return;
+
+            const web =
+                webs.find(
+                    item => item.id === currentWebId
+                );
+
+            if (!web) return;
+
+            const newUrl = shiftChapterUrl(web.url, delta);
+
+            if (!newUrl) {
+                alert("No se ha encontrado ningún número en la URL.");
                 return;
             }
 
-            deleteMode = true;
-
-            normalActions.style.display = "none";
-
-            deleteActions.classList.add("active");
-
-            render();
-
-        });
-
-
-    document
-        .getElementById("cancelDeleteButton")
-        .addEventListener("click", () => {
-
-            deleteMode = false;
-
-            normalActions.style.display = "flex";
-
-            deleteActions.classList.remove("active");
-
-            render();
-
-        });
-
-
-    document
-        .getElementById("confirmDeleteButton")
-        .addEventListener("click", () => {
-
-            const selected = [
-                ...document.querySelectorAll(
-                    ".delete-checkbox:checked"
-                )
-            ].map(
-                checkbox => checkbox.dataset.id
-            );
-
-            webs = webs.filter(
-                web => !selected.includes(web.id)
-            );
+            web.url = newUrl;
 
             saveWebs();
 
-            deleteMode = false;
-
-            normalActions.style.display = "flex";
-
-            deleteActions.classList.remove("active");
+            webFrame.src = newUrl;
 
             render();
 
-        });
+        }
 
 
-    /* =========================
-       OPEN WEB
-    ========================= */
-
-    function openWeb(id) {
-
-        const web = webs.find(
-            item => item.id === id
-        );
-
-        if (!web) return;
-
-        currentWebId = id;
-
-        webFrame.src = web.url;
-
-        viewer.classList.add("active");
-
-    }
+        document
+            .getElementById("prevChapterButton")
+            .addEventListener("click", () => goToChapter(-1));
 
 
-    /* =========================
-       CHAPTER NAV
-    ========================= */
+        document
+            .getElementById("nextChapterButton")
+            .addEventListener("click", () => goToChapter(1));
 
-    /*
-     * Busca el número de capítulo en la URL y le suma/resta
-     * `delta`. Soporta dos formatos:
-     *
-     *  1. "-{capitulo}_{pagina}"  →  ej. "...-1_01"
-     *     Se detecta el guion seguido de un número (entero o con
-     *     decimal) y un guion bajo. Solo se toca el número del
-     *     capítulo; la página ("_01") se deja tal cual.
-     *
-     *     Si el capítulo tiene decimales (ej. "0.5", capítulos
-     *     extra/especiales), en vez de sumar el delta al decimal
-     *     (lo que daría "1.5"), se redondea al entero completo en
-     *     la dirección del desplazamiento: "Siguiente" redondea
-     *     hacia arriba (0.5 → 1), "Anterior" redondea hacia abajo
-     *     (0.5 → 0). Esto es una suposición razonable para
-     *     capítulos especiales — dime si tu caso es distinto.
-     *
-     *  2. Cualquier otro caso: se usa el último número que
-     *     aparezca en la URL (comportamiento anterior), con
-     *     ceros a la izquierda preservados.
-     */
-    function shiftChapterUrl(url, delta) {
 
-        const chapterPageMatches = [
-            ...url.matchAll(/-(\d+(?:\.\d+)?)_(\d+)/g)
-        ];
+        /* =========================
+           CLOSE WEB
+        ========================= */
 
-        if (chapterPageMatches.length > 0) {
+        document
+            .getElementById("backButton")
+            .addEventListener("click", closeViewer);
 
-            const match =
-                chapterPageMatches[chapterPageMatches.length - 1];
 
-            const chapterStr = match[1];
+        function closeViewer() {
 
-            const chapterNum = parseFloat(chapterStr);
+            updateCurrentUrl();
 
-            const newChapterNum = chapterStr.includes(".")
-                ? (delta > 0
-                    ? Math.ceil(chapterNum)
-                    : Math.floor(chapterNum))
-                : chapterNum + delta;
+            viewer.classList.remove("active");
 
-            if (newChapterNum < 0) return null;
+            webFrame.src = "";
 
-            const start = match.index + 1; // +1 para saltar el "-"
-            const end = start + chapterStr.length;
-
-            return (
-                url.slice(0, start) +
-                newChapterNum +
-                url.slice(end)
-            );
+            currentWebId = null;
 
         }
 
-        const match = url.match(/(\d+)(?!.*\d)/);
 
-        if (!match) return null;
+        /* =========================
+           URL SYNC
+        ========================= */
 
-        const numStr = match[1];
+        /*
+         * IMPORTANTE — Same-Origin Policy:
+         *
+         * Solo podemos leer `webFrame.contentWindow.location.href`
+         * cuando el iframe carga contenido del MISMO origen que esta
+         * página. En cuanto navega a un dominio externo (el caso
+         * habitual aquí), el navegador bloquea el acceso y lanza un
+         * SecurityError — por eso el bloque catch de abajo existe.
+         *
+         * Esto es una restricción de seguridad del navegador, no un
+         * bug: ninguna web puede leer la URL interna de un iframe
+         * ajeno (si pudiera, cualquier página podría espiar tu
+         * navegación dentro de un iframe con tu banco, por ejemplo).
+         * No hay forma de saltársela desde JS del lado del padre.
+         *
+         * Además, muchos sitios grandes (Google, X, YouTube...)
+         * bloquean directamente que se les embeba en un iframe
+         * mediante cabeceras X-Frame-Options / CSP, y ahí ni siquiera
+         * llegará a cargar contenido.
+         *
+         * Lo que SÍ funciona:
+         *  - Webs que sirvas tú mismo desde el mismo origen que esta
+         *    página: la lectura de location.href funcionará sin
+         *    problema.
+         *  - Webs de terceros que tú controles y a las que puedas
+         *    añadir un pequeño script para que avisen activamente de
+         *    su URL vía postMessage (ver listener más abajo). Eso sí
+         *    esquiva la restricción, porque la propia web colabora.
+         */
 
-        const newNum = parseInt(numStr, 10) + delta;
+        function updateCurrentUrl() {
 
-        if (newNum < 0) return null;
+            if (!currentWebId) return;
 
-        let newNumStr = String(newNum);
+            const web =
+                webs.find(
+                    item => item.id === currentWebId
+                );
 
-        if (numStr.length > 1 && numStr.startsWith("0")) {
-            newNumStr = newNumStr.padStart(numStr.length, "0");
+            if (!web) return;
+
+            try {
+
+                const currentUrl =
+                    webFrame.contentWindow.location.href;
+
+                if (
+                    currentUrl &&
+                    currentUrl !== "about:blank" &&
+                    currentUrl !== web.url
+                ) {
+
+                    web.url = currentUrl;
+
+                    saveWebs();
+
+                    render();
+
+                }
+
+            } catch (error) {
+
+                /*
+                 * Iframe cross-origin: no podemos leer su URL.
+                 * No hacemos nada — es el comportamiento esperado
+                 * para la inmensa mayoría de webs embebidas.
+                 */
+
+            }
+
         }
 
-        return (
-            url.slice(0, match.index) +
-            newNumStr +
-            url.slice(match.index + numStr.length)
-        );
+        /*
+         * En vez de sondear cada 500ms, escuchamos el evento "load"
+         * del propio iframe: se dispara en cada navegación completa
+         * (incluidas las de sitios cross-origin), así que es el punto
+         * correcto para intentar leer la URL — sin gastar ciclos de
+         * CPU sondeando constantemente.
+         *
+         * Ojo: en sitios que son SPA (navegación por History API sin
+         * recarga completa) este evento no se disparará en cada
+         * "página" interna, aunque sí en la carga inicial.
+         */
+        webFrame.addEventListener("load", updateCurrentUrl);
 
-    }
-
-
-    function goToChapter(delta) {
-
-        if (!currentWebId) return;
-
-        const web =
-            webs.find(
-                item => item.id === currentWebId
-            );
-
-        if (!web) return;
-
-        const newUrl = shiftChapterUrl(web.url, delta);
-
-        if (!newUrl) {
-            alert("No se ha encontrado ningún número en la URL.");
-            return;
-        }
-
-        web.url = newUrl;
-
-        saveWebs();
-
-        webFrame.src = newUrl;
-
-        render();
-
-    }
-
-
-    document
-        .getElementById("prevChapterButton")
-        .addEventListener("click", () => goToChapter(-1));
-
-
-    document
-        .getElementById("nextChapterButton")
-        .addEventListener("click", () => goToChapter(1));
-
-
-    /* =========================
-       CLOSE WEB
-    ========================= */
-
-    document
-        .getElementById("backButton")
-        .addEventListener("click", closeViewer);
-
-
-    function closeViewer() {
-
-        updateCurrentUrl();
-
-        viewer.classList.remove("active");
-
-        webFrame.src = "";
-
-        currentWebId = null;
-
-    }
-
-
-    /* =========================
-       URL SYNC
-    ========================= */
-
-    /*
-     * IMPORTANTE — Same-Origin Policy:
-     *
-     * Solo podemos leer `webFrame.contentWindow.location.href`
-     * cuando el iframe carga contenido del MISMO origen que esta
-     * página. En cuanto navega a un dominio externo (el caso
-     * habitual aquí), el navegador bloquea el acceso y lanza un
-     * SecurityError — por eso el bloque catch de abajo existe.
-     *
-     * Esto es una restricción de seguridad del navegador, no un
-     * bug: ninguna web puede leer la URL interna de un iframe
-     * ajeno (si pudiera, cualquier página podría espiar tu
-     * navegación dentro de un iframe con tu banco, por ejemplo).
-     * No hay forma de saltársela desde JS del lado del padre.
-     *
-     * Además, muchos sitios grandes (Google, X, YouTube...)
-     * bloquean directamente que se les embeba en un iframe
-     * mediante cabeceras X-Frame-Options / CSP, y ahí ni siquiera
-     * llegará a cargar contenido.
-     *
-     * Lo que SÍ funciona:
-     *  - Webs que sirvas tú mismo desde el mismo origen que esta
-     *    página: la lectura de location.href funcionará sin
-     *    problema.
-     *  - Webs de terceros que tú controles y a las que puedas
-     *    añadir un pequeño script para que avisen activamente de
-     *    su URL vía postMessage (ver listener más abajo). Eso sí
-     *    esquiva la restricción, porque la propia web colabora.
-     */
-
-    function updateCurrentUrl() {
-
-        if (!currentWebId) return;
-
-        const web =
-            webs.find(
-                item => item.id === currentWebId
-            );
-
-        if (!web) return;
-
-        try {
-
-            const currentUrl =
-                webFrame.contentWindow.location.href;
+        /*
+         * Vía de escape para webs que SÍ controlas: si añades este
+         * pequeño script en la página embebida, evita por completo la
+         * restricción de origen cruzado avisando activamente de su URL:
+         *
+         *   window.parent.postMessage(
+         *       { type: "web-manager:url", url: location.href },
+         *       "*"
+         *   );
+         *
+         * Llamando a eso en el load de la página y cada vez que cambie
+         * la URL (p.ej. en un listener de "popstate" o tras un
+         * pushState), este listener la recogerá automáticamente.
+         */
+        window.addEventListener("message", event => {
 
             if (
-                currentUrl &&
-                currentUrl !== "about:blank" &&
-                currentUrl !== web.url
+                !event.data ||
+                event.data.type !== "web-manager:url" ||
+                !currentWebId
             ) {
+                return;
+            }
 
-                web.url = currentUrl;
+            const web =
+                webs.find(
+                    item => item.id === currentWebId
+                );
+
+            if (!web) return;
+
+            if (event.data.url && event.data.url !== web.url) {
+
+                web.url = event.data.url;
 
                 saveWebs();
 
@@ -1448,98 +1509,33 @@
 
             }
 
-        } catch (error) {
+        });
 
-            /*
-             * Iframe cross-origin: no podemos leer su URL.
-             * No hacemos nada — es el comportamiento esperado
-             * para la inmensa mayoría de webs embebidas.
-             */
 
-        }
+        /* =========================
+           SECURITY
+        ========================= */
 
-    }
+        function escapeHtml(value) {
 
-    /*
-     * En vez de sondear cada 500ms, escuchamos el evento "load"
-     * del propio iframe: se dispara en cada navegación completa
-     * (incluidas las de sitios cross-origin), así que es el punto
-     * correcto para intentar leer la URL — sin gastar ciclos de
-     * CPU sondeando constantemente.
-     *
-     * Ojo: en sitios que son SPA (navegación por History API sin
-     * recarga completa) este evento no se disparará en cada
-     * "página" interna, aunque sí en la carga inicial.
-     */
-    webFrame.addEventListener("load", updateCurrentUrl);
+            const div =
+                document.createElement("div");
 
-    /*
-     * Vía de escape para webs que SÍ controlas: si añades este
-     * pequeño script en la página embebida, evita por completo la
-     * restricción de origen cruzado avisando activamente de su URL:
-     *
-     *   window.parent.postMessage(
-     *       { type: "web-manager:url", url: location.href },
-     *       "*"
-     *   );
-     *
-     * Llamando a eso en el load de la página y cada vez que cambie
-     * la URL (p.ej. en un listener de "popstate" o tras un
-     * pushState), este listener la recogerá automáticamente.
-     */
-    window.addEventListener("message", event => {
+            div.textContent = value;
 
-        if (
-            !event.data ||
-            event.data.type !== "web-manager:url" ||
-            !currentWebId
-        ) {
-            return;
-        }
-
-        const web =
-            webs.find(
-                item => item.id === currentWebId
-            );
-
-        if (!web) return;
-
-        if (event.data.url && event.data.url !== web.url) {
-
-            web.url = event.data.url;
-
-            saveWebs();
-
-            render();
+            return div.innerHTML;
 
         }
 
-    });
 
+        /* =========================
+           INIT
+        ========================= */
 
-    /* =========================
-       SECURITY
-    ========================= */
+        render();
 
-    function escapeHtml(value) {
-
-        const div =
-            document.createElement("div");
-
-        div.textContent = value;
-
-        return div.innerHTML;
-
-    }
-
-
-    /* =========================
-       INIT
-    ========================= */
-
-    render();
-
-</script>
+    </script>
 
 </body>
+
 </html>
