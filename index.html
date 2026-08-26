@@ -976,7 +976,12 @@
 
     async function copyStorageJson() {
 
-        const json = JSON.stringify(webs, null, 2);
+        const json = JSON.stringify(webs.map(webs => {
+            return {
+                title: webs.title,
+                url: webs.url
+            };
+        }), null, 2);
 
         try {
 
