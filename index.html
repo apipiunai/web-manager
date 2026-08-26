@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <title>Web Manager</title>
 
@@ -24,6 +25,13 @@
             border: 0;
             cursor: pointer;
             font-size: 15px;
+        }
+
+        .material-icons {
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* =========================
@@ -58,8 +66,14 @@
             color: white;
         }
 
-        .json-btn {
+        .est-btn {
             min-width: 80px;
+            flex: 1;
+            width: 80px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn:hover {
@@ -306,7 +320,10 @@
         }
 
         #chapterNav button {
-            padding: 10px 16px;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             border-radius: 8px;
 
             background: rgba(0, 0, 0, .7);
@@ -359,15 +376,15 @@
             <span></span>
 
             <div class="actions" id="normalActions">
-                <button class="btn json-btn" id="copyJsonButton" title="Copiar todo el JSON al portapapeles">
+                <button class="btn est-btn" id="copyJsonButton" title="Copiar todo el JSON al portapapeles">
                     Export
                 </button>
 
-                <button class="btn json-btn" id="importJsonButton" title="Importar array de webs en JSON">
+                <button class="btn est-btn" id="importJsonButton" title="Importar array de webs en JSON">
                     Import
                 </button>
 
-                <button class="btn  json-btn primary" id="addButton">
+                <button class="btn  est-btn primary" id="addButton">
                     Add
                 </button>
             </div>
@@ -388,6 +405,7 @@
         <div class="modal-content">
 
             <h2 id="modalTitle">Añadir web</h2>
+
 
             <form id="addForm">
 
@@ -430,31 +448,22 @@
 
                 <div class="modal-actions">
 
-                    <button
-                        type="button"
-                        class="btn danger"
-                        id="deleteWebButton"
-                        style="display:none; margin-right: auto;"
-                    >
-                        Borrar
+                    <button type="button" class="btn danger" id="deleteWebButton"
+                        style="display:none; margin-right: auto;">
+                        Delete
                     </button>
 
-                    <button
-                        type="button"
-                        class="btn"
-                        id="copyWebButton"
-                        style="display:none; margin-right: auto;"
-                        title="Copiar JSON de esta web"
-                    >
-                        Copiar
+                    <button type="button" class="btn est-btn" id="copyWebButton"
+                        style="display:none; margin-right: auto;" title="Copiar JSON de esta web">
+                        Export
+                    </button>
+                    <button type="button" class="btn est-btn" id="cancelAddButton">
+                        Cancel
                     </button>
 
-                    <button type="button" class="btn" id="cancelAddButton">
-                        Cancelar
-                    </button>
 
-                    <button type="submit" class="btn primary" id="submitButton">
-                        Añadir
+                    <button type="submit" class="btn est-btn primary" id="submitButton">
+                        Add
                     </button>
 
                 </div>
@@ -497,10 +506,9 @@
                     <button type="button" class="btn" id="importAppendButton" title="Añadir a las webs existentes">
                         Añadir
                     </button>
-
-                    <button type="button" class="btn primary" id="importReplaceButton" title="Reemplazar toda la lista">
+                    <!--<button type="button" class="btn primary" id="importReplaceButton" title="Reemplazar toda la lista">
                         Reemplazar todo
-                    </button>
+                    </button> -->
                 </div>
 
             </div>
@@ -517,15 +525,16 @@
     <div id="viewer">
 
         <button id="backButton">
-            ←
+            <span class="material-icons">arrow_back</span>
         </button>
 
         <div id="chapterNav">
             <button id="prevChapterButton">
-                ‹
+                <span class="material-icons">arrow_back_ios</span>
+
             </button>
             <button id="nextChapterButton">
-                ›
+                <span class="material-icons">arrow_forward_ios</span>
             </button>
         </div>
 
@@ -1014,13 +1023,14 @@
             const json = JSON.stringify(webs.map(webs => {
                 return {
                     title: webs.title,
-                    url: webs.url
+                    url: webs.url,
+                    image: webs.image && webs.image.length < 100 ? webs.image : ""
                 };
             }), null, 2);
 
             try {
 
-                if (navigator.clipboard && navigator.clipboard.writeText) {
+                if (navigator.clipboard && navigator.clipboard.writeText) { 
                     await navigator.clipboard.writeText(json);
                 } else {
                     const textarea = document.createElement("textarea");
@@ -1194,23 +1204,23 @@
         });
 
 
-        const importReplaceButton =
-            document.getElementById("importReplaceButton");
+        // const importReplaceButton =
+        //     document.getElementById("importReplaceButton");
 
-        importReplaceButton.addEventListener("click", () => {
-            if (webs.length > 0) {
-                const confirmReplace = confirm(
-                    "¿Estás seguro de que deseas reemplazar todas las webs existentes con el array importado?"
-                );
-                if (!confirmReplace) return;
-            }
+        // importReplaceButton.addEventListener("click", () => {
+        //     if (webs.length > 0) {
+        //         const confirmReplace = confirm(
+        //             "¿Estás seguro de que deseas reemplazar todas las webs existentes con el array importado?"
+        //         );
+        //         if (!confirmReplace) return;
+        //     }
 
-            const success = importStorageJson(importJsonInput.value, true);
-            if (success) {
-                importModal.classList.remove("active");
-                importJsonInput.value = "";
-            }
-        });
+        //     const success = importStorageJson(importJsonInput.value, true);
+        //     if (success) {
+        //         importModal.classList.remove("active");
+        //         importJsonInput.value = "";
+        //     }
+        // });
 
 
         /* =========================
